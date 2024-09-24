@@ -15,10 +15,7 @@ app.use(express.json());
 // Connect to MongoDB
 const db = async () => {
   try {
-    await mongoose.connect('mongodb://127.0.0.1:27017/img_gallery', {
-      useNewUrlParser: true,
-      useUnifiedTopology: true
-    });
+    await mongoose.connect("mongodb://127.0.0.1:27017/img_gallery");
     console.log("MongoDB is connected");
   } catch (error) {
     console.error("MongoDB connection error:", error.message);
@@ -81,4 +78,6 @@ app.delete('/api/delete/:id', async (req, res) => {
   }
 });
 
-app.listen(5000, () => console.log('Server running on port 5000'));
+const port = 7000;
+
+app.listen(port, () => console.log(`Server running on ${port}`));

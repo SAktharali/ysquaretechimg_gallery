@@ -8,7 +8,7 @@ const ImageGallery = () => {
 
   // Fetch images on component mount
   useEffect(() => {
-    axios.get('http://localhost:5000/api/images')
+    axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/images`)
       .then((response) => {
         setImages(response.data);
       })
@@ -36,59 +36,62 @@ const ImageGallery = () => {
     const formData = new FormData();
     formData.append('image', selectedFile);
   
-    axios.post('http://localhost:5000/api/upload', formData)
+    axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/upload`, formData)
       .then((response) => {
-        setImages((prevImages) => [...prevImages, response.data.image]); // Add new image to the state
-      })
+        setImages((prevImages) => [...prevImages, response.data.image]); 
+         })
       .catch((error) => {
         console.error('Error uploading image:', error);
       });
   
-    // Optionally reset the file input after the upload
     setSelectedFile(null);
     fileInputRef.current.value = "";
-    // document.getElementById('file-input').value = '';  // Clear the file input
   };
   
   // Handle image deletion
   const deleteImage = (id) => {
-    axios.delete(`http://localhost:5000/api/delete/${id}`)
-      .then((response) => {
-        setImages(images.filter(image => image._id !== id)); // Remove deleted image from state
-      })
-      .catch((error) => {
-        console.error('Error deleting image:', error);
-      });
+    const isConfirmed = window.confirm("Are you sure you want to delete it?");
+  
+    if (isConfirmed) {
+      axios.delete(`${process.env.REACT_APP_BACKEND_URL}/api/delete/${id}`)
+        .then((response) => {
+          // Update the state to remove the deleted image
+          setImages((prevImages) => prevImages.filter((image) => image._id !== id));
+        })
+        .catch((error) => {
+          console.error('Error deleting image:', error);
+        });
+    }
   };
-
+  
   return (
-    <div className='container mt-3'>
-      {/* Image upload form */}
+    <>
+      <h2 className='text-center text-success mt-5'>Image Gallery</h2>
+    <div className='container mt-5 text-center'>
       <form onSubmit={handleUpload}>
         <input type="file"
           className='form-input'
          onChange={handleFileChange}
-            ref={fileInputRef}  // Set ref to the file input
-        //  required
+            ref={fileInputRef} 
          />
         <button type="submit" className='btn btn-primary'>Upload</button>
       </form>
 
-      {/* Image gallery */}
    <div className="gallery mt-5">
         {images.length > 0 ? (
           images.map((image) => (
             <div key={image._id} className="image-card">
-              <img src={`http://localhost:5000${image.imageUrl}`} alt={image.name} />
+              <img src={`${process.env.REACT_APP_BACKEND_URL}${image.imageUrl}`} alt={image.name} />
               <p>{image.name}</p>
-              <button onClick={() => deleteImage(image._id)} className='btn btn-danger w-100'>Delete</button>
+              <button onClick={() => deleteImage(image._id)} className='w-100'>Delete</button>
             </div>
           ))
         ) : (
-          <p>No images uploaded yet.</p>
+          <p className='text-danger fs-3'>No images found.</p>
         )}
       </div>
     </div>
+    </>
   );
 };
 
